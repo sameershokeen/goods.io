@@ -1,25 +1,30 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
+import { NavLink } from "react-router-dom";
 import { Home, Store, Wallet, User, Settings, LogOut } from "lucide-react";
 import { gsap } from "gsap";
 
 const Sidebar = () => {
   const sidebarRef = useRef(null);
   const textRefs = useRef([]);
+  const itemRefs = useRef([]);
 
   const menuItems = [
-    { name: "Home", icon: <Home size={22} /> },
-    { name: "Marketplace", icon: <Store size={22} /> },
-    { name: "Wallet", icon: <Wallet size={22} /> },
-    { name: "Profile", icon: <User size={22} /> },
-    { name: "Settings", icon: <Settings size={22} /> },
-    { name: "Logout", icon: <LogOut size={22} /> },
-    { name: "Home", icon: <Home size={22} /> },
-    { name: "Marketplace", icon: <Store size={22} /> },
-    { name: "Wallet", icon: <Wallet size={22} /> },
-    { name: "Profile", icon: <User size={22} /> },
-    { name: "Settings", icon: <Settings size={22} /> },
-    { name: "Logout", icon: <LogOut size={22} /> },
+    
+    { name: "Home", icon: <Home size={22} />, path: "/" },
+    { name: "Marketplace", icon: <Store size={22} />, path: "/marketplace" },
+    { name: "Wallet", icon: <Wallet size={22} />, path: "/wallet" },
+    { name: "Profile", icon: <User size={22} />, path: "/profile" },
+    { name: "Settings", icon: <Settings size={22} />, path: "/settings" },
+    { name: "Logout", icon: <LogOut size={22} />, path: "/logout" },
   ];
+
+  useEffect(() => {
+    gsap.fromTo(
+      sidebarRef.current,
+      { x: -100, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.6, ease: "power3.out" }
+    );
+  }, []);
 
   const handleMouseEnter = () => {
     gsap.to(sidebarRef.current, {
@@ -48,27 +53,54 @@ const Sidebar = () => {
     });
   };
 
+  const handleItemHover = (index) => {
+    gsap.to(itemRefs.current[index], {
+      scale: 1.08,
+      x: 5,
+      duration: 0.2,
+      ease: "power2.out",
+    });
+  };
+
+  const handleItemLeave = (index) => {
+    gsap.to(itemRefs.current[index], {
+      scale: 1,
+      x: 0,
+      duration: 0.2,
+      ease: "power2.out",
+    });
+  };
+
   return (
     <div
       ref={sidebarRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="h-screen bg-[#0F0F10] text-white fixed top-0 left-0 shadow-lg flex flex-col py-6 px-3 overflow-hidden border-r border-gray-700"
+      className="h-screen bg-[#0F0F10] text-white fixed top-0 left-0 z-50  shadow-lg flex flex-col py-6 px-3 overflow-hidden border-r border-gray-700"
       style={{ width: "70px", transition: "width 0.3s ease" }}
     >
       <ul className="space-y-6">
         {menuItems.map((item, index) => (
-          <li
-            key={index}
-            className="flex items-center gap-4 p-2 rounded-md hover:bg-[#1A1B1E] cursor-pointer"
-          >
-            <span>{item.icon}</span>
-            <span
-              ref={(el) => (textRefs.current[index] = el)}
-              className="opacity-0 whitespace-nowrap text-sm bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 bg-clip-text text-transparent"
+          <li key={index}>
+            <NavLink
+              to={item.path}
+              ref={(el) => (itemRefs.current[index] = el)}
+              onMouseEnter={() => handleItemHover(index)}
+              onMouseLeave={() => handleItemLeave(index)}
+              className={({ isActive }) =>
+                `flex items-center gap-4 p-2 rounded-md cursor-pointer hover:bg-[#1A1B1E] transition ${
+                  isActive ? "bg-[#1A1B1E]" : ""
+                }`
+              }
             >
-              {item.name}
-            </span>
+              <span>{item.icon}</span>
+              <span
+                ref={(el) => (textRefs.current[index] = el)}
+                className="opacity-0 whitespace-nowrap text-sm bg-gradient-to-r from-purple-400 via-pink-400 to-yellow-400 bg-clip-text text-transparent"
+              >
+                {item.name}
+              </span>
+            </NavLink>
           </li>
         ))}
       </ul>
