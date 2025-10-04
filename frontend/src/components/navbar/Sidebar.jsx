@@ -1,6 +1,15 @@
 import React, { useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import { Home, Store, Wallet, User, Settings, LogOut } from "lucide-react";
+import {
+  Home,
+  Store,
+  CreditCard,
+  Rocket,
+  Layers,
+  User,
+  Settings,
+  LogOut,
+} from "lucide-react";
 import { gsap } from "gsap";
 
 const Sidebar = () => {
@@ -9,10 +18,29 @@ const Sidebar = () => {
   const itemRefs = useRef([]);
 
   const menuItems = [
-    
     { name: "Home", icon: <Home size={22} />, path: "/" },
-    { name: "Marketplace", icon: <Store size={22} />, path: "/marketplace" },
-    { name: "Wallet", icon: <Wallet size={22} />, path: "/wallet" },
+    {
+      name: "NFT Marketplace",
+      icon: <Store size={22} />,
+      path: "/marketplace/nft",
+    },
+    {
+      name: "Coin Marketplace",
+      icon: <CreditCard size={22} />,
+      path: "/marketplace/coin",
+    },
+    {
+      name: "Coin Launchpad",
+      icon: <Rocket size={22} />,
+      path: "/launchpad/coinlaunchpad",
+    },
+    {
+      name: "NFT Launchpad",
+      icon: <Layers size={22} />,
+      path: "/launchpad/nftlaunchpad",
+    },
+    { name: "P2P Place", icon: <Store size={22} />, path: "/p2p" },
+    { name: "Wallet", icon: <CreditCard size={22} />, path: "/wallet" },
     { name: "Profile", icon: <User size={22} />, path: "/profile" },
     { name: "Settings", icon: <Settings size={22} />, path: "/settings" },
     { name: "Logout", icon: <LogOut size={22} />, path: "/logout" },
@@ -46,11 +74,7 @@ const Sidebar = () => {
       duration: 0.3,
       ease: "power2.inOut",
     });
-    gsap.to(textRefs.current, {
-      opacity: 0,
-      duration: 0.2,
-      stagger: 0.05,
-    });
+    gsap.to(textRefs.current, { opacity: 0, duration: 0.2, stagger: 0.05 });
   };
 
   const handleItemHover = (index) => {
@@ -76,7 +100,7 @@ const Sidebar = () => {
       ref={sidebarRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="h-screen bg-[#0F0F10] text-white fixed top-0 left-0 z-50  shadow-lg flex flex-col py-6 px-3 overflow-hidden border-r border-gray-700"
+      className="h-screen bg-[#0F0F10] text-white fixed top-0 left-0 z-50 shadow-lg flex flex-col py-6 px-3 overflow-hidden border-r border-gray-700"
       style={{ width: "70px", transition: "width 0.3s ease" }}
     >
       <ul className="space-y-6">
