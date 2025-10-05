@@ -3,6 +3,7 @@ import HeroSlider from "../components/nfts/Heroslider";
 import TrendingNFTs from "../components/nfts/TrendingNFTs";
 import NewLaunches from "../components/nfts/NewLanunches";
 import CategorySlider from "../components/nfts/CategorySlider";
+import NFTDisplay from "../components/nfts/NFTDisplay";
 
 const NFTMarketplace = () => {
   const [nfts, setNfts] = useState([]);
@@ -49,6 +50,7 @@ const NFTMarketplace = () => {
       <TrendingNFTs nfts={nfts} />
       <NewLaunches nfts={nfts} />
       <CategorySlider />
+      <NFTDisplay nfts={nfts} />
     </div>
   );
 };
