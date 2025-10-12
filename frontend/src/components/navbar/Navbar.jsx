@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import Wallet from "../wallet/wallet";
+import Wallet from "../wallet/Wallet";
+import WalletConnect from "../../services/WalletConnect";
 
 const Navbar = () => {
   const navRef = useRef(null);
@@ -38,7 +39,7 @@ const Navbar = () => {
       {/* RIGHT SECTION */}
       <div className="flex items-center gap-4">
         {/* ✅ Connect Wallet Button */}
-        <Wallet />
+        <WalletConnect />
 
         {/* Profile Icon */}
         <div className="w-10 h-10 bg-[#666b79] rounded-full flex items-center justify-center cursor-pointer hover:bg-[#26272B] transition">
