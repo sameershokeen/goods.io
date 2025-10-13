@@ -1,53 +1,62 @@
-import Offer from "../models/Offer.js";
-import User from "../models/User.js";
+import Offer from "../models/offerModel.js";
+import User from "../models/userModel.js";
 
 // Create a new offer
 export const createOffer = async (req, res) => {
   try {
-    const { title, description, price, publicKey } = req.body;
+    const { title, crypto, price, amount, seller_wallet, payment_method } = req.body;
 
-    let user = await User.findOne({ publicKey });
-    if (!user) {
-      user = await User.create({ publicKey });
+    // Validate required fields
+    if (!title || !crypto || !price || !amount || !seller_wallet) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Missing required fields: title, crypto, price, amount, seller_wallet" 
+      });
     }
 
     const newOffer = await Offer.create({
       title,
-      description,
+      crypto,
       price,
-      seller: user._id,
+      amount,
+      seller_wallet,
+      payment_method: payment_method || "Bank Transfer",
+      status: "active"
     });
 
     res.status(201).json({ success: true, offer: newOffer });
   } catch (error) {
+    console.error("Error creating offer:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get all active offers
+// Get all active offers with filters
 export const getOffers = async (req, res) => {
   try {
-    const offers = await Offer.find({ status: "active" }).populate("seller");
+    const { crypto, status } = req.query;
+    const query = {
+      ...(crypto ? { crypto } : {}),
+      ...(status ? { status } : { status: "active" }),
+    };
+    
+    const offers = await Offer.find(query).sort({ created_at: -1 });
     res.status(200).json({ success: true, offers });
   } catch (error) {
+    console.error("Error fetching offers:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// Get offers by user (publicKey)
+// Get offers by user (wallet address)
 export const getUserOffers = async (req, res) => {
   try {
     const { publicKey } = req.params;
-    const user = await User.findOne({ publicKey });
 
-    if (!user)
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-
-    const offers = await Offer.find({ seller: user._id });
+    const offers = await Offer.find({ seller_wallet: publicKey });
     res.status(200).json({ success: true, offers });
   } catch (error) {
+    console.error("Error fetching user offers:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -67,6 +76,7 @@ export const updateOfferStatus = async (req, res) => {
 
     res.status(200).json({ success: true, offer });
   } catch (error) {
+    console.error("Error updating offer status:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

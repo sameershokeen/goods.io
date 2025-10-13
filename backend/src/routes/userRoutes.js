@@ -1,7 +1,7 @@
 // backend/routes/userRoutes.js
 
 import express from "express";
-import { registerUser, getUser } from "../controllers/userController";
+import { registerUser, getUser } from "../controllers/userController.js";
 
 const router = express.Router();
 

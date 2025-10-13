@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
   wallet_address: { type: String, unique: true, required: true },
-  username: { type: String, required: true },
+  username: { type: String, required: false, default: null },
   contact: {
     email: { type: String },
     phone: { type: String },

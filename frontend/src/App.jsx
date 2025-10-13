@@ -11,26 +11,28 @@ import CoinMarketplace from './pages/CoinMarketplace'
 import NFTLaunchpad from './pages/NFTLaunchpad'
 import CoinLaunchpad from './pages/CoinLaunchpad'
 import P2P from './pages/P2P'
-
+import { UserProvider } from "./contexts/UserContexts";
 
 
 const App = () => {
   return (
     <div>
-      <Navbar />
-      <Sidebar />
+      <UserProvider>
+        <Navbar />
+        <Sidebar />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/p2p" element={<P2P />} />
-        <Route path="/marketplace/nft" element={<NFTMarketplace />} />
-        <Route path="/launchpad/nftlaunchpad" element={<NFTLaunchpad />} />
-        <Route path="/marketplace/coin" element={<CoinMarketplace />} />
-        <Route path="/launchpad/coinlaunchpad" element={<CoinLaunchpad />} />
-        <Route path="/wallet" element={<Wallet />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
-      </Routes>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/p2p" element={<P2P />} />
+          <Route path="/marketplace/nft" element={<NFTMarketplace />} />
+          <Route path="/launchpad/nftlaunchpad" element={<NFTLaunchpad />} />
+          <Route path="/marketplace/coin" element={<CoinMarketplace />} />
+          <Route path="/launchpad/coinlaunchpad" element={<CoinLaunchpad />} />
+          <Route path="/wallet" element={<Wallet />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
+        </Routes>
+      </UserProvider>
     </div>
   );
 }
