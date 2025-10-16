@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet } from "@solana/wallet-adapter-react";
-import { getUser, updateUserProfile } from "../services/api";
+import { getUser } from "../services/api";
+
+const badgeColor = (status) => {
+  switch (status) {
+    case 'verified': return 'bg-green-600 text-green-100';
+    case 'pending': return 'bg-yellow-600 text-yellow-100';
+    case 'rejected': return 'bg-red-600 text-red-100';
+    default: return 'bg-gray-500 text-white';
+  }
+};
 
 const Profile = () => {
   const { publicKey, connected } = useWallet();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    username: '',
-    contact: {
-      email: '',
-      phone: ''
-    },
-    telegram: {
-      username: ''
-    }
-  });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [kycUploading, setKycUploading] = useState(false);
 
   useEffect(() => {
     if (connected && publicKey) {
@@ -32,69 +31,52 @@ const Profile = () => {
       const response = await getUser(publicKey.toString());
       if (response) {
         setUser(response);
-        setFormData({
-          username: response.username || '',
-          contact: {
-            email: response.contact?.email || '',
-            phone: response.contact?.phone || ''
-          },
-          telegram: {
-            username: response.telegram?.username || ''
-          }
-        });
       }
     } catch (err) {
-      console.error('Error fetching user profile:', err);
       setError('Failed to load profile');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSave = async () => {
-    try {
-      setError(null);
-      setSuccess(null);
-      
-      const response = await updateUserProfile(publicKey.toString(), formData);
-      
-      if (response.success) {
-        setUser(response.user);
-        setEditing(false);
-        setSuccess('Profile updated successfully!');
-      } else {
-        setError(response.message || 'Failed to update profile');
-      }
-    } catch (err) {
-      console.error('Error updating profile:', err);
-      setError('Error updating profile');
-    }
-  };
-
-  const handleInputChange = (field, value) => {
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
+  const handleStartKYC = async (e) => {
+    e.preventDefault();
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.pdf,image/*';
+    fileInput.onchange = async (e) => {
+      if (!e.target.files[0]) return;
+      setKycUploading(true);
+      const formData = new FormData();
+      formData.append('wallet_address', publicKey.toString());
+      formData.append('kyc_file', e.target.files[0]);
+      try {
+        const res = await fetch(`/api/users/kyc`, {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.success) {
+          setSuccess('KYC submitted!');
+          fetchUserProfile();
+        } else {
+          setError(data.message || 'KYC failed');
         }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [field]: value
-      }));
-    }
+      } catch (err) {
+        setError('Error uploading KYC');
+      } finally {
+        setKycUploading(false);
+      }
+    };
+    fileInput.click();
   };
 
   if (!connected) {
     return (
-      <div className="min-h-screen bg-[#0F0F10] text-white px-6 py-20 pl-22">
+      <div className="min-h-screen bg-gradient-to-br from-[#151227] to-[#272940] text-white px-6 py-20 pl-22 flex items-center justify-center">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-3xl font-bold mb-6">Profile</h1>
-          <p className="text-gray-400">Please connect your wallet to view your profile.</p>
+          <h1 className="text-4xl font-bold mb-6 tracking-tight">Profile</h1>
+          <p className="text-gray-300 text-lg">Please connect your wallet to view your profile.</p>
         </div>
       </div>
     );
@@ -102,172 +84,61 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F0F10] text-white px-6 py-20 pl-22">
+      <div className="min-h-screen bg-gradient-to-br from-[#151227] to-[#272940] text-white px-6 py-20 pl-22 flex items-center justify-center">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-          <p className="mt-2 text-gray-400">Loading profile...</p>
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-4 border-purple-400"></div>
+          <p className="mt-4 text-gray-400 text-lg">Loading profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0F0F10] text-white px-6 py-20 pl-22">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Profile</h1>
-
-        {/* Success/Error Messages */}
-        {success && (
-          <div className="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg mb-6">
-            {success}
-          </div>
-        )}
-        {error && (
-          <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-6">
-            {error}
-          </div>
-        )}
-
-        {/* Wallet Info */}
-        <div className="bg-gray-800 rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Wallet Information</h2>
-          <div className="space-y-2">
+    <div className="min-h-screen bg-gradient-to-br from-[#151227] to-[#272940] text-white px-6 py-20 pl-22">
+      <div className="max-w-2xl mx-auto space-y-10">
+        <h1 className="text-4xl font-extrabold mb-2 tracking-tight text-center">Profile</h1>
+        {error && <div className="bg-red-700/80 p-3 rounded text-center text-white mb-4 animate-pulse">{error}</div>}
+        {success && <div className="bg-green-700/80 p-3 rounded text-center text-white mb-4 animate-pulse">{success}</div>}
+        {/* Profile Card */}
+        <div className="bg-gradient-to-br from-[#373063] to-[#1d1c3d] rounded-xl p-8 shadow-lg border border-purple-700/[.2] transition-all animate-fade-in">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
             <div>
-              <span className="text-gray-400">Address:</span>
-              <span className="ml-2 font-mono">{publicKey?.toString()}</span>
+              <div className="text-lg md:text-2xl font-bold mb-1">{user?.username || '-'}</div>
+              <div className="font-mono text-purple-300 break-all text-sm">{user?.wallet_address || '-'}</div>
             </div>
-            <div>
-              <span className="text-gray-400">Status:</span>
-              <span className="ml-2 text-green-400">Connected</span>
+            <div className="text-right">
+              <span className="text-base text-gray-300">KYC Status:</span><br />
+              <span className={`inline-block rounded-full px-3 py-1 mt-1 text-sm font-semibold ${badgeColor(user?.kyc_status)}`}>
+                {user?.kyc_status || 'N/A'}
+              </span>
             </div>
+          </div>
+          <div className="mt-7 border-t border-purple-900/30 pt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div><span className="block text-xs text-gray-400">Email</span><span className="text-base">{user?.contact?.email || '-'}</span></div>
+            <div><span className="block text-xs text-gray-400">Phone</span><span className="text-base">{user?.contact?.phone || '-'}</span></div>
+            <div><span className="block text-xs text-gray-400">Telegram</span><span className="text-base">{user?.telegram?.username || '-'}</span></div>
           </div>
         </div>
-
-        {/* Profile Form */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Profile Information</h2>
-            {!editing ? (
-              <button
-                onClick={() => setEditing(true)}
-                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
-              >
-                Edit Profile
-              </button>
-            ) : (
-              <div className="space-x-2">
-                <button
-                  onClick={() => {
-                    setEditing(false);
-                    setFormData({
-                      username: user.username || '',
-                      contact: {
-                        email: user.contact?.email || '',
-                        phone: user.contact?.phone || ''
-                      },
-                      telegram: {
-                        username: user.telegram?.username || ''
-                      }
-                    });
-                  }}
-                  className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors"
-                >
-                  Save
-                </button>
-              </div>
-            )}
+        {/* KYC Section */}
+        <div className="bg-gradient-to-br from-[#332b53] to-[#281f42] rounded-xl p-8 shadow-lg border border-purple-800/[.22] mt-8 flex flex-col items-center transition-all animate-fade-in">
+          <h2 className="text-2xl font-semibold mb-3 tracking-tight">Verify your Identity (KYC)</h2>
+          <div className="mb-4">
+            <span className={`inline-block rounded-full px-4 py-1 text-base font-medium ${badgeColor(user?.kyc_status)}`}>{user?.kyc_status}</span>
           </div>
-
-          <div className="space-y-4">
-            {/* Username */}
-            <div>
-              <label className="block text-gray-400 mb-2">Username</label>
-              {editing ? (
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) => handleInputChange('username', e.target.value)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter username"
-                />
-              ) : (
-                <p className="text-white">{user?.username || 'Not set'}</p>
-              )}
+          {user?.kyc_status !== 'verified' && (
+            <button
+              disabled={kycUploading}
+              onClick={handleStartKYC}
+              className="bg-gradient-to-r from-purple-500 to-fuchsia-600 hover:from-purple-600 hover:to-fuchsia-700 disabled:opacity-60 px-6 py-3 rounded-lg text-lg font-bold shadow-lg mt-4 transition"
+            >
+              {kycUploading ? 'Uploading KYC...' : 'Upload KYC Document'}
+            </button>
+          )}
+          {user?.kyc_file_url && (
+            <div className="mt-5 text-center text-xs text-gray-400">
+              KYC file uploaded: <span className="underline break-all">{user.kyc_file_url}</span>
             </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-gray-400 mb-2">Email</label>
-              {editing ? (
-                <input
-                  type="email"
-                  value={formData.contact.email}
-                  onChange={(e) => handleInputChange('contact.email', e.target.value)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter email"
-                />
-              ) : (
-                <p className="text-white">{user?.contact?.email || 'Not set'}</p>
-              )}
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label className="block text-gray-400 mb-2">Phone</label>
-              {editing ? (
-                <input
-                  type="tel"
-                  value={formData.contact.phone}
-                  onChange={(e) => handleInputChange('contact.phone', e.target.value)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter phone number"
-                />
-              ) : (
-                <p className="text-white">{user?.contact?.phone || 'Not set'}</p>
-              )}
-            </div>
-
-            {/* Telegram */}
-            <div>
-              <label className="block text-gray-400 mb-2">Telegram Username</label>
-              {editing ? (
-                <input
-                  type="text"
-                  value={formData.telegram.username}
-                  onChange={(e) => handleInputChange('telegram.username', e.target.value)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter Telegram username"
-                />
-              ) : (
-                <p className="text-white">{user?.telegram?.username || 'Not set'}</p>
-              )}
-            </div>
-
-            {/* KYC Status */}
-            <div>
-              <label className="block text-gray-400 mb-2">KYC Status</label>
-              <div className="flex items-center gap-2">
-                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  user?.kyc_status === 'verified' ? 'bg-green-600 text-green-100' :
-                  user?.kyc_status === 'pending' ? 'bg-yellow-600 text-yellow-100' :
-                  'bg-red-600 text-red-100'
-                }`}>
-                  {user?.kyc_status || 'pending'}
-                </span>
-                {user?.kyc_status !== 'verified' && (
-                  <button className="text-blue-400 hover:text-blue-300 text-sm">
-                    Complete KYC
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

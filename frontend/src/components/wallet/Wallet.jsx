@@ -1,17 +1,7 @@
-import React, { useEffect, useState, useMemo } from "react";
-import {
-  ConnectionProvider,
-  WalletProvider,
-  useWallet,
-} from "@solana/wallet-adapter-react";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import { PhantomWalletAdapter } from "@solana/wallet-adapter-wallets";
-import {
-  WalletModalProvider,
-  WalletMultiButton,
-} from "@solana/wallet-adapter-react-ui";
+import React, { useEffect, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
-
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 // --- Component to show wallet button + balance ---
@@ -23,9 +13,7 @@ const WalletContent = () => {
     const fetchBalance = async () => {
       if (publicKey) {
         try {
-          const connection = new Connection(
-            clusterApiUrl(WalletAdapterNetwork.Devnet)
-          );
+          const connection = new Connection(clusterApiUrl('devnet'));
           const bal = await connection.getBalance(new PublicKey(publicKey));
           setBalance(bal / 1e9); // Lamports → SOL
         } catch (err) {
@@ -50,19 +38,8 @@ const WalletContent = () => {
 
 // --- Main Wallet Provider Component ---
 const Wallet = () => {
-  const network = WalletAdapterNetwork.Devnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-
-  const wallets = useMemo(() => [new PhantomWalletAdapter()], [network]);
-
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-          <WalletContent />
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+    <WalletContent />
   );
 };
 

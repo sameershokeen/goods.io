@@ -189,75 +189,59 @@ const P2P = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0F0F10] text-white px-6 py-20 pl-22">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">P2P Trading</h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#151227] to-[#272940] text-white px-6 py-20 pl-22">
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-4xl font-extrabold tracking-tight">P2P Trading</h1>
         <div className="flex items-center gap-4">
           {connected ? (
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-gray-300">
-                {publicKey?.toString().slice(0, 8)}...{publicKey?.toString().slice(-4)}
-              </span>
+              <span className="text-md font-mono text-green-200">{publicKey?.toString().slice(0, 8)}...{publicKey?.toString().slice(-4)}</span>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span className="text-sm text-gray-300">Wallet not connected</span>
+              <span className="text-md text-gray-400">Wallet not connected</span>
             </div>
           )}
         </div>
       </div>
-
-      {/* Error Message */}
       {error && (
-        <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-6">
-          {error}
-        </div>
+        <div className="bg-red-700/80 p-3 rounded text-center text-white mb-4 animate-pulse border border-red-900">{error}</div>
       )}
-
-      {/* Filters + Sorting */}
-      <SearchFilter filters={filters} setFilters={setFilters} />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Offers */}
-        <div className="lg:col-span-2">
+      <div className="mb-8">
+        <SearchFilter filters={filters} setFilters={setFilters}/>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-4">
           {loading ? (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-              <p className="mt-2 text-gray-400">Loading offers...</p>
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-4 border-purple-400"></div>
+              <p className="mt-4 text-gray-400 text-lg">Loading offers...</p>
             </div>
           ) : (
             <>
-          <OfferList offers={currentOffers} onTrade={handleTrade} />
-
-          {/* Loader for Infinite Scroll */}
-          <div ref={loaderRef} className="flex justify-center py-6">
-            {visibleCount < filteredOffers.length ? (
-              <span className="text-gray-400">Loading more offers...</span>
-            ) : (
-              <span className="text-gray-500">No more offers</span>
-            )}
-          </div>
+              <OfferList offers={currentOffers} onTrade={handleTrade} modern/>
+              <div ref={loaderRef} className="flex justify-center py-8">
+                {visibleCount < filteredOffers.length ? (
+                  <span className="text-purple-400/80">Loading more offers...</span>
+                ) : (
+                  <span className="text-gray-500">No more offers</span>
+                )}
+              </div>
             </>
           )}
         </div>
-
-        {/* Right: Create Offer */}
         <div className="lg:col-span-1">
-          <CreateOfferForm addOffer={addOffer} />
+          <div className="sticky top-32">
+            <CreateOfferForm addOffer={addOffer} modern/>
+          </div>
         </div>
       </div>
-
-      {/* Chat System */}
       {selectedTrade && (
-        <ChatSystem 
-          tradeId={selectedTrade.id} 
-          otherUser={selectedTrade.otherUser}
-        />
+        <ChatSystem tradeId={selectedTrade.id} otherUser={selectedTrade.otherUser} />
       )}
     </div>
   );
 };
-
 export default P2P;

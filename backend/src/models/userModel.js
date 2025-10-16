@@ -17,6 +17,10 @@ const UserSchema = new mongoose.Schema({
     enum: ["pending", "verified", "rejected"],
     default: "pending",
   },
+  kyc_file_url: {
+    type: String,
+    default: null,
+  },
   created_at: { type: Date, default: Date.now },
 });
 
