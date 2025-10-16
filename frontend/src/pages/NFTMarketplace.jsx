@@ -108,7 +108,7 @@ const NFTMarketplace = () => {
     );
 
   return (
-    <div className="min-h-screen bg-[#0F0F10] text-white px-6 py-20 pl-22">
+    <div className="min-h-screen bg-[#0F0F10] text-white px-6 py-20 pl-22 ">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">NFT Marketplace</h1>
 
@@ -160,7 +160,7 @@ const NFTMarketplace = () => {
         <HeroSlider />
 
         {/* NFT Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 p-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {sortedNFTs.map((nft) => (
             <div key={nft.id} className="bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-750 transition-colors">
               <div className="relative">

@@ -39,7 +39,7 @@ const Navbar = () => {
       {/* RIGHT SECTION */}
       <div className="flex items-center gap-4">
         {/* ✅ Connect Wallet Button */}
-        <WalletConnect />
+       <Wallet/>
 
         {/* Profile Icon */}
         <div className="w-10 h-10 bg-[#666b79] rounded-full flex items-center justify-center cursor-pointer hover:bg-[#26272B] transition">
