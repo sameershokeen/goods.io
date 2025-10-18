@@ -100,7 +100,7 @@ const Sidebar = () => {
       ref={sidebarRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="h-screen bg-[#0F0F10] text-white fixed top-0 left-0 z-50 shadow-lg flex flex-col py-6 px-3 overflow-hidden border-r border-gray-700"
+      className="h-screen bg-[#0F0F10] text-white fixed top-0 left-0 z-50 shadow-lg flex flex-col py-6 px-3 overflow-hidden border-r border-gray-500"
       style={{ width: "70px", transition: "width 0.3s ease" }}
     >
       <ul className="space-y-6">
@@ -112,8 +112,8 @@ const Sidebar = () => {
               onMouseEnter={() => handleItemHover(index)}
               onMouseLeave={() => handleItemLeave(index)}
               className={({ isActive }) =>
-                `flex items-center gap-4 p-2 rounded-md cursor-pointer hover:bg-[#1A1B1E] transition ${
-                  isActive ? "bg-[#1A1B1E]" : ""
+                `flex items-center gap-4 p-2 rounded-md cursor-pointer hover:bg-gray-700 transition ${
+                  isActive ? "bg-gray-700" : ""
                 }`
               }
             >
