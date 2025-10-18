@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet } from "@solana/wallet-adapter-react";
 import { getUser } from "../services/api";
+import Dashboard from '../components/dashboard/Dashboard';
 
 const badgeColor = (status) => {
   switch (status) {
@@ -141,7 +142,10 @@ const Profile = () => {
           )}
         </div>
       </div>
+      <Dashboard />
     </div>
+    
+
   );
 };
 

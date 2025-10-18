@@ -34,15 +34,38 @@ export const createOffer = async (req, res) => {
 // Get all active offers with filters
 export const getOffers = async (req, res) => {
   try {
+    console.log("===== BACKEND getOffers CALLED =====");
+    console.log("Request query params:", req.query);
+    
     const { crypto, status } = req.query;
     const query = {
       ...(crypto ? { crypto } : {}),
       ...(status ? { status } : { status: "active" }),
     };
     
+    console.log("MongoDB query object:", query);
+    console.log("Database name:", Offer.db.name);
+    console.log("Collection name:", Offer.collection.name);
+    
     const offers = await Offer.find(query).sort({ created_at: -1 });
+    
+    console.log("===== QUERY RESULTS =====");
+    console.log("Number of offers found:", offers.length);
+    
+    if (offers.length > 0) {
+      console.log("First offer sample:", offers[0]);
+    } else {
+      console.log("No offers found. Checking all documents without filter...");
+      const allOffers = await Offer.find({});
+      console.log("Total documents in collection:", allOffers.length);
+      if (allOffers.length > 0) {
+        console.log("Sample document from collection:", allOffers[0]);
+      }
+    }
+    
     res.status(200).json({ success: true, offers });
   } catch (error) {
+    console.error("===== ERROR IN getOffers =====");
     console.error("Error fetching offers:", error);
     res.status(500).json({ success: false, message: error.message });
   }

@@ -23,25 +23,38 @@ const P2P = () => {
   const [selectedTrade, setSelectedTrade] = useState(null);
   const loaderRef = useRef(null);
 
-  // Fetch offers from backend
+  // Fetch offers on component mount
   useEffect(() => {
     fetchOffers();
+  }, []);
+
+  // Refetch offers when asset filter changes
+  useEffect(() => {
+    if (filters.asset) {
+      fetchOffers();
+    }
   }, [filters.asset]);
 
   const fetchOffers = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getOffers({ 
-        crypto: filters.asset || undefined,
-        status: "active" 
-      });
       
-      if (response.success) {
-        // Transform backend data to match frontend format
-        const transformedOffers = response.offers.map(offer => ({
+      // Build request params - only include crypto if it has a value
+      const requestParams = {
+        status: "active",
+      };
+      
+      if (filters.asset && filters.asset !== "") {
+        requestParams.crypto = filters.asset;
+      }
+      
+      const response = await getOffers(requestParams);
+
+      if (response && response.success) {
+        const transformedOffers = response.offers.map((offer) => ({
           id: offer._id,
-          type: "Sell", // All backend offers are sell orders for now
+          type: "Sell",
           asset: offer.crypto,
           amount: offer.amount.toString(),
           price: offer.price.toString(),
@@ -49,7 +62,7 @@ const P2P = () => {
           seller_wallet: offer.seller_wallet,
           payment_method: offer.payment_method,
           title: offer.title,
-          created_at: offer.created_at
+          created_at: offer.created_at,
         }));
         setOffers(transformedOffers);
       } else {
@@ -64,12 +77,12 @@ const P2P = () => {
   };
 
   const addOffer = async (offerData) => {
-    try {
-      if (!connected || !publicKey) {
-        setError("Please connect your wallet to create an offer");
-        return;
-      }
+    if (!connected || !publicKey) {
+      setError("Please connect your wallet to create an offer");
+      return;
+    }
 
+    try {
       const userWallet = publicKey.toString();
       
       const newOffer = {
@@ -78,13 +91,12 @@ const P2P = () => {
         price: parseFloat(offerData.price),
         amount: parseFloat(offerData.amount),
         seller_wallet: userWallet,
-        payment_method: offerData.payment_method || "Bank Transfer"
+        payment_method: offerData.payment_method || "Bank Transfer",
       };
 
       const response = await createOffer(newOffer);
-      
+
       if (response.success) {
-        // Transform and add to local state
         const transformedOffer = {
           id: response.offer._id,
           type: "Sell",
@@ -95,9 +107,10 @@ const P2P = () => {
           seller_wallet: response.offer.seller_wallet,
           payment_method: response.offer.payment_method,
           title: response.offer.title,
-          created_at: response.offer.created_at
+          created_at: response.offer.created_at,
         };
         setOffers([transformedOffer, ...offers]);
+        setError(null);
       } else {
         setError("Failed to create offer");
       }
@@ -121,23 +134,22 @@ const P2P = () => {
     try {
       const tradeData = {
         offerId: offer.id,
-        buyer_wallet: publicKey.toString()
+        buyer_wallet: publicKey.toString(),
       };
 
       const response = await createTrade(tradeData);
-      
+
       if (response.success) {
         setError(null);
         setSelectedTrade({
           id: response.trade._id,
           offer: offer,
-          otherUser: { 
+          otherUser: {
             wallet_address: offer.seller_wallet,
-            username: offer.user 
-          }
+            username: offer.user,
+          },
         });
         alert(`Trade started successfully! Trade ID: ${response.trade._id}`);
-        // Refresh offers to show updated status
         fetchOffers();
       } else {
         setError(response.message || "Failed to start trade");
@@ -148,7 +160,7 @@ const P2P = () => {
     }
   };
 
-  // ✅ Filtering
+  // Filter offers
   let filteredOffers = offers.filter((offer) => {
     return (
       (filters.asset ? offer.asset === filters.asset : true) &&
@@ -159,7 +171,7 @@ const P2P = () => {
     );
   });
 
-  // ✅ Sorting
+  // Sort offers
   if (filters.sort === "priceLow") {
     filteredOffers.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
   } else if (filters.sort === "priceHigh") {
@@ -170,15 +182,14 @@ const P2P = () => {
     filteredOffers.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
   }
 
-  // ✅ Offers visible on screen
   const currentOffers = filteredOffers.slice(0, visibleCount);
 
-  // ✅ Infinite Scroll Observer
+  // Infinite Scroll Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setVisibleCount((prev) => prev + 4); // load next 4
+          setVisibleCount((prev) => prev + 4);
         }
       },
       { threshold: 1.0 }
@@ -196,7 +207,10 @@ const P2P = () => {
           {connected ? (
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-md font-mono text-green-200">{publicKey?.toString().slice(0, 8)}...{publicKey?.toString().slice(-4)}</span>
+              <span className="text-md font-mono text-green-200">
+                {publicKey?.toString().slice(0, 8)}...
+                {publicKey?.toString().slice(-4)}
+              </span>
             </div>
           ) : (
             <div className="flex items-center gap-2">
@@ -206,12 +220,17 @@ const P2P = () => {
           )}
         </div>
       </div>
+
       {error && (
-        <div className="bg-red-700/80 p-3 rounded text-center text-white mb-4 animate-pulse border border-red-900">{error}</div>
+        <div className="bg-red-700/80 p-3 rounded text-center text-white mb-4 animate-pulse border border-red-900">
+          {error}
+        </div>
       )}
+
       <div className="mb-8">
-        <SearchFilter filters={filters} setFilters={setFilters}/>
+        <SearchFilter filters={filters} setFilters={setFilters} />
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
           {loading ? (
@@ -219,9 +238,9 @@ const P2P = () => {
               <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-4 border-purple-400"></div>
               <p className="mt-4 text-gray-400 text-lg">Loading offers...</p>
             </div>
-          ) : (
+          ) : currentOffers.length > 0 ? (
             <>
-              <OfferList offers={currentOffers} onTrade={handleTrade} modern/>
+              <OfferList offers={currentOffers} onTrade={handleTrade} modern />
               <div ref={loaderRef} className="flex justify-center py-8">
                 {visibleCount < filteredOffers.length ? (
                   <span className="text-purple-400/80">Loading more offers...</span>
@@ -230,18 +249,26 @@ const P2P = () => {
                 )}
               </div>
             </>
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-gray-400 text-lg">No offers available</p>
+              <p className="text-gray-500 text-sm mt-2">Create an offer to get started!</p>
+            </div>
           )}
         </div>
+
         <div className="lg:col-span-1">
           <div className="sticky top-32">
-            <CreateOfferForm addOffer={addOffer} modern/>
+            <CreateOfferForm addOffer={addOffer} modern />
           </div>
         </div>
       </div>
+
       {selectedTrade && (
         <ChatSystem tradeId={selectedTrade.id} otherUser={selectedTrade.otherUser} />
       )}
     </div>
   );
 };
+
 export default P2P;
