@@ -1,0 +1,20 @@
+[package]
+name = "goods-marketplace"
+version = "0.1.0"
+description = "Decentralized marketplace for NFTs and tokens"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "goods_marketplace"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.32.1"
+anchor-spl = "0.32.1"
